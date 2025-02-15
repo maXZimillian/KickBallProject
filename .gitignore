@@ -1,0 +1,63 @@
+# Игнорирование Unity временных и кэшированных файлов
+.utmp/
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+
+# Игнорирование данных, которые могут быть слишком большими
+/[Mm]emoryCaptures/
+[Rr]ecordings/
+
+# JetBrains Rider, Visual Studio и другие IDE файлы
+/[Aa]ssets/Plugins/Editor/JetBrains*
+.vs/
+.gradle/
+ExportedObj/
+.consulo/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Игнорирование мета файлов
+*.meta
+
+# Игнорирование crash отчетов
+sysinfo.txt
+
+# Crashlytics
+crashlytics-build.properties
+
+# Игнорирование временных файлов, созданных Addressables
+/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.hash
+/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bundle
+
+# Лог-файлы
+*.log
+*.log.*
+*.stacktrace
+
+# Игнорирование временных и кэшированных данных пакетов Unity
+/Packages/com.unity.*.cache/
+
+# Игнорирование временных и резервных файлов редакторов
+*.swp
+*.swn
+*.bak
+
+# Игнорирование других ненужных файлов
+[Dd]ump/
+[Cc]apture/
+[Cc]rash[Rr]eports/

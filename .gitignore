@@ -17,9 +17,6 @@
 ExportedObj/
 .consulo/
 *.csproj
-*.unityproj
-*.sln
-*.suo
 *.tmp
 *.user
 *.userprefs
@@ -30,9 +27,6 @@ ExportedObj/
 *.mdb
 *.opendb
 *.VC.db
-
-# Игнорирование мета файлов
-*.meta
 
 # Игнорирование crash отчетов
 sysinfo.txt
@@ -51,11 +45,6 @@ crashlytics-build.properties
 
 # Игнорирование временных и кэшированных данных пакетов Unity
 /Packages/com.unity.*.cache/
-
-# Игнорирование временных и резервных файлов редакторов
-*.swp
-*.swn
-*.bak
 
 # Игнорирование других ненужных файлов
 [Dd]ump/

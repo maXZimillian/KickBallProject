@@ -7,16 +7,27 @@ public class PenaltyPlayerController : MonoBehaviour
     private Animator animator;
     private Vector3 startPosition;
     private Quaternion startRotation;
+    private GameController gameController;
+    private WebGameManager webGameManager;
 
     private void Start() 
     {
-        GateMove ball = GameObject.FindObjectOfType<GateMove>();
-        GameController gameController = GameObject.FindObjectOfType<GameController>();
-        ball.OnSwiped +=StartAnimation;
-        gameController.OnRestart += ResetPosition;
+        GateMove ball = FindObjectOfType<GateMove>();
+        gameController = FindObjectOfType<GameController>();
+        webGameManager = FindObjectOfType<WebGameManager>();
         animator = GetComponent<Animator>();
+        Debug.Log("WebGameManager = " + webGameManager);
+        webGameManager.OnKickStartReceived += OnMessageRecieved;
+        //ball.OnSwiped += StartAnimation;
+        webGameManager.OnGameRestart += ResetPosition;
+        
         startPosition = transform.position;
         startRotation = transform.rotation;
+    }
+
+    private void OnMessageRecieved(KickStartMessage message)
+    {
+        StartAnimation(); 
     }
 
     private void StartAnimation() 
@@ -26,7 +37,6 @@ public class PenaltyPlayerController : MonoBehaviour
 
     private void ResetPosition()
     {
-
         transform.position = startPosition;
         transform.rotation = startRotation;
         animator.SetTrigger("restart");

@@ -26,7 +26,7 @@ public class SkinSelector : MonoBehaviour
         gameObject.GetComponent<MeshRenderer>().materials = skin.GetComponent<MeshRenderer>().materials;
         float colliderRadius = GetComponent<CapsuleCollider>().radius;
         colliderRadius *= gameObject.transform.localScale.x;
-        Debug.Log(skin.transform.localScale);
+        //Debug.Log(skin.transform.localScale);
         transform.localScale = skin.transform.localScale;
         colliderRadius /= transform.localScale.x;
         GetComponent<CapsuleCollider>().radius = colliderRadius;

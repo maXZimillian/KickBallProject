@@ -5,79 +5,73 @@ using UnityEngine.SceneManagement;
 using System;
 
 public class GameController : MonoBehaviour
-{   
-    [SerializeField] private float swipeAreaTimeScale = 1f;
+{
+#region Public
+    [SerializeField] private float timeScale = 1f;
+    public PlayerTypes playerRole = PlayerTypes.playerDefault;
+    public string playerID = "";
     public int moneyCount { get; private set; } = 0;
     public StrikeType selectedStrikeType = StrikeType.force;
+#endregion
+
+#region Private
     private GameStates gameState = GameStates.game;
     private BallController ball;
+    private WebGameManager webGameManager;
     private int attemptsPlayerMade = 0;
-    private bool isGoal = false;
+#endregion
+
+#region Actions
     public event Action OnEnterSwipeArea;
     public event Action OnSwipeExit;
     public event Action<int> OnWin;
     public event Action OnGameOver;
-    public event Action OnHintEnter;
     public event Action OnEscapePressed;
-    public event Action OnObstacleHit;
     public event Action OnBallCenterMove;
     public event Action OnRestart;
     public event Action<int> OnCollect;
+#endregion
+       
 
-    private void Start() 
+    private void Start()
     {
-        ball = GameObject.FindObjectOfType<BallController>();
-        ball.OnStop += GameOver;
+        Time.timeScale = timeScale;
+        AssignParamsAndActions();
+    }
 
-        GateMove d = GameObject.FindObjectOfType<GateMove>();
-        d.OnSwiped += OnFinalSwipe;
+    private void AssignParamsAndActions()
+    {
+        webGameManager = FindObjectOfType<WebGameManager>();
+        if (webGameManager != null)
+        {
+            webGameManager.OnGameStart += HandleGameStart;
+            webGameManager.OnBallStatsReceived += HandleBallStatsReceived;
+            webGameManager.OnGoalReceived += (msg) => { AddPoint(Vector2.zero); }; 
+            webGameManager.OnGameRestart += HandleRestart;
+            webGameManager.OnOpponentLost += HandleLostOpponent;
+            if(webGameManager.gameStarted)
+            {
+                HandleGameStart(webGameManager.role,webGameManager.playerID);
+            }
+        }
 
-        GoalGateTrigger[] g = GameObject.FindObjectsOfType<GoalGateTrigger>();
-        foreach(GoalGateTrigger trigger in g)
+        ball = FindObjectOfType<BallController>();
+        ball.OnStop += () => { webGameManager.SendMessage(new RestartMessage()); };
+        //ball.OnStop += GameOver;
+        GoalGateTrigger[] g = FindObjectsOfType<GoalGateTrigger>();
+        foreach (GoalGateTrigger trigger in g)
         {
             trigger.OnGateEnter += Gate_OnEnterSwipeArea;
             trigger.OnGateExit += Gate_OnExitSwipeArea;
         }
-
-        WinTrigger[] w = GameObject.FindObjectsOfType<WinTrigger>();
-        foreach(WinTrigger trigger in w)
-            trigger.OnWinEnter += AddPoint;
-
-        GameOverTrigger[] t = GameObject.FindObjectsOfType<GameOverTrigger>();
-        foreach(GameOverTrigger trigger in t)
-            trigger.OnEnter += GameOver;
-        
-        HintController[] h = GameObject.FindObjectsOfType<HintController>();
-        foreach(HintController item in h)
-            item.OnHintEnter += OnHint;
-
-        Obstacle[] o = GameObject.FindObjectsOfType<Obstacle>();
-        foreach(Obstacle item in o)
-            item.OnObstacleHit += OnObstacleCollide;
-
-        CenterMoveTrigger[] e = GameObject.FindObjectsOfType<CenterMoveTrigger>();
-        foreach(CenterMoveTrigger item in e)
-            item.OnEnter += Ball_OnMoveCenter;
-
-        //b.StartMove();
     }
 
     private void Update()
     {
-        if (Input.GetKeyUp(KeyCode.Escape)&&gameState==GameStates.game&&OnEscapePressed!=null)
+        if (Input.GetKeyUp(KeyCode.Escape) && gameState == GameStates.game && OnEscapePressed != null)
         {
             OnEscapePressed.Invoke();
         }
-    }
-
-    private void OnHint()
-    {
-        if(OnHintEnter!=null)OnHintEnter.Invoke();
-    }
-
-    private void OnObstacleCollide()
-    {
-        OnObstacleHit?.Invoke();
     }
 
     private void GameOver()
@@ -91,23 +85,17 @@ public class GameController : MonoBehaviour
 
     private void Gate_OnEnterSwipeArea()
     {
-        GameObject.FindObjectOfType<BallController>().gameObject.GetComponent<Rigidbody>().velocity = Vector3.zero; 
-        Time.timeScale = swipeAreaTimeScale;
-        if(OnEnterSwipeArea!=null)OnEnterSwipeArea.Invoke();
+        FindObjectOfType<BallController>().gameObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
+        OnEnterSwipeArea?.Invoke();
     }
+
     private void Gate_OnExitSwipeArea()
     {
-        StartCoroutine(LoseOnEndDelay());
-        if(OnSwipeExit!=null)OnSwipeExit.Invoke();
-    }
-
-    private void Ball_OnMoveCenter()
-    {
-        OnBallCenterMove?.Invoke();
-    }
-
-    private void OnFinalSwipe(){
-        Time.timeScale = 1.0f;
+        if(playerRole == PlayerTypes.goalkeeper)
+        {
+            StartCoroutine(LoseOnEndDelay());
+        }
+        OnSwipeExit?.Invoke();
     }
 
     private void AddPoint(Vector2 winEntryPosition)
@@ -116,27 +104,81 @@ public class GameController : MonoBehaviour
         {
             moneyCount++;
             OnCollect?.Invoke(1);
-            isGoal = true;   
         }
     }
 
     private void WinGame()
     {
-        if (gameState==GameStates.game){
+        if (gameState == GameStates.game)
+        {
             gameState = GameStates.gameOver;
-            if(OnWin!=null)OnWin.Invoke(moneyCount);
+            OnWin?.Invoke(moneyCount);
         }
     }
 
-    private void Restart ()
+    private void Restart()
     {
         ball.BackToStartPos();
-        OnRestart.Invoke();
+        OnRestart?.Invoke();
     }
 
-    private IEnumerator LoseOnEndDelay(){
+    private IEnumerator LoseOnEndDelay()
+    {
         yield return new WaitForSeconds(4f);
-        GameOver();
+        webGameManager.SendMessage(new RestartMessage());
+        //GameOver();
+    }
+
+    private void HandleGameStart(string role, string playerID)
+    {
+        this.playerID = playerID;
+
+        if (role == "kicker")
+        {
+            this.playerRole = PlayerTypes.kicker;
+            Debug.Log("Роль игрока: нападающий");
+        }
+        else if (role == "goalkeeper")
+        {
+            this.playerRole = PlayerTypes.goalkeeper;
+            Debug.Log("Роль игрока: вратарь");
+
+            WinTrigger[] w = FindObjectsOfType<WinTrigger>();
+            foreach (WinTrigger trigger in w)
+                trigger.OnWinEnter += AddPoint;
+        }
+    }
+
+    private void HandleRestart()
+    {
+        if (playerRole == PlayerTypes.kicker)
+        {
+            playerRole = PlayerTypes.goalkeeper;
+        }
+        else if (playerRole == PlayerTypes.goalkeeper)
+        {
+            playerRole = PlayerTypes.kicker;
+        } 
+        GameOver();    
+    }
+
+    private void HandleLostOpponent()
+    {
+        SceneManager.LoadScene(0);
+    }
+
+    private void HandleBallStatsReceived(BallStatsMessage ballStatsMessage)
+    {
+
+    }
+
+    private void OnDestroy()
+    {
+        if (webGameManager != null)
+        {
+            webGameManager.OnGameStart -= HandleGameStart;
+            webGameManager.OnBallStatsReceived -= HandleBallStatsReceived;
+        }
     }
 }
 
@@ -149,4 +191,10 @@ public enum StrikeType{
 public enum GameStates{
     game,
     gameOver
+}
+
+public enum PlayerTypes{
+    kicker,
+    goalkeeper,
+    playerDefault
 }

@@ -9,8 +9,7 @@ public class InteractButton : MonoBehaviour
     public event Click OnButtonPressed;
 
     private void Start() {
-        GameController gameController = GameObject.FindObjectOfType<GameController>();
-        gameController.OnHintEnter+=ShowButton;
+        GameController gameController = FindObjectOfType<GameController>();
     }
 
     private void ShowButton(){

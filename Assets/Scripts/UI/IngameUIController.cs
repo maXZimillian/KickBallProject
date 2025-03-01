@@ -2,9 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class IngameUIController : MonoBehaviour
 {
+    [SerializeField] TouchHandler touchHandler;
     [SerializeField] GameObject winPanel;
     [SerializeField] GameObject losePanel;
     [SerializeField] GameObject pausePanel;
@@ -15,22 +17,74 @@ public class IngameUIController : MonoBehaviour
     [SerializeField] int winPanelDelay = 3;
     [SerializeField] float popupShowSpeed = 0.1f;
     [SerializeField] GameObject[] pointsCollectListeners;
-    [SerializeField] Image[] buttonsArray;
+    [SerializeField] GameObject kickerButtonsContainer;
+    [SerializeField] GameObject keeperButtonsContainer;
     private Coroutine swipePopupCoroutine = null;
     private Coroutine damageCoroutine = null;
     
     private GameController gameController;
+    private GoalkeeperPlayerControl gkController;
 
     void Start()
     {
-       gameController = GameObject.FindObjectOfType<GameController>();
+       gameController = FindObjectOfType<GameController>();
        gameController.OnWin += ShowPopupOnWin;
        gameController.OnGameOver += ShowLosePopup; 
        gameController.OnEnterSwipeArea += ShowSwipePopup;
        gameController.OnSwipeExit += CloseSwipePopup;
        gameController.OnEscapePressed += ShowPausePopup;
-       gameController.OnObstacleHit += ShowDamageEffect;
-       GameObject.FindObjectOfType<GoalGateTrigger>().SetTrigger();
+       gameController.OnRestart += ChangeButtons;
+       ChangeButtons();
+       FindObjectOfType<GoalGateTrigger>().SetTrigger();
+       gkController = FindObjectOfType<GoalkeeperPlayerControl>();
+    }
+
+    void Update()
+    {
+        if(gameController.playerRole == PlayerTypes.kicker)
+        {
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                ForceButtonPressed();
+            }
+            if (Input.GetKeyDown(KeyCode.W))
+            {
+                SpinButtonPressed();
+            }
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                KickButtonPressed();
+            }
+        }
+        else if (gameController.playerRole == PlayerTypes.goalkeeper)
+        {
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                JumpPressed();
+            }
+            if (Input.GetKeyDown(KeyCode.W))
+            {
+                SideJumpPressed();
+            }
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                SideBlockPressed();
+            }
+        }
+    }
+
+    private void ChangeButtons()
+    {
+        if(gameController.playerRole == PlayerTypes.kicker)
+        {
+            keeperButtonsContainer.SetActive(false);
+            kickerButtonsContainer.SetActive(true);
+        }
+        else if (gameController.playerRole == PlayerTypes.goalkeeper)
+        {
+            kickerButtonsContainer.SetActive(false);
+            keeperButtonsContainer.SetActive(true);
+        }
     }
 
     private void ShowPopupOnWin(int points){
@@ -50,31 +104,40 @@ public class IngameUIController : MonoBehaviour
             ingameElement.SetActive(false);
     }
 
+#region Kicker Buttons
     public void ForceButtonPressed(){
         gameController.selectedStrikeType = StrikeType.force;
-        foreach (Image button in buttonsArray)
-        {
-            button.color = Color.white;
-        }
-        buttonsArray[0].color = Color.green;
+        touchHandler.GenerateSwipelineFromJoystick();
     }
 
     public void SpinButtonPressed(){
         gameController.selectedStrikeType = StrikeType.spin;
-        foreach (Image button in buttonsArray)
-        {
-            button.color = Color.white;
-        }
-        buttonsArray[1].color = Color.green;
+        touchHandler.GenerateSwipelineFromJoystick();
     }
 
     public void KickButtonPressed(){
         gameController.selectedStrikeType = StrikeType.kick;
-        foreach (Image button in buttonsArray)
-        {
-            button.color = Color.white;
-        }
-        buttonsArray[2].color = Color.green;
+        touchHandler.GenerateSwipelineFromJoystick();
+    }
+#endregion
+
+#region Keeper Buttons
+    public void JumpPressed(){
+        gkController.JumpHigh();
+    }
+
+    public void SideJumpPressed(){
+        gkController.JumpMedium();
+    }
+
+    public void SideBlockPressed(){
+        gkController.BlockLow();
+    }
+#endregion
+
+    public void LoadMainMenu()
+    {
+        SceneManager.LoadScene(0);
     }
 
     private void ShowDamageEffect(){

@@ -5,10 +5,14 @@ using UnityEngine;
 
 public class GateCameraMover : MonoBehaviour
 {
-    [SerializeField] private Transform target;
+    [SerializeField] private Transform targetBall;
+    [SerializeField] private Transform targetGK;
+    [SerializeField] private Transform startPointBall;
+    [SerializeField] private Transform startPointGK;
     [SerializeField] private float smooth= 5.0f;
     [SerializeField] private GameObject[] followingListeners;
     private Coroutine followingCoroutine;
+    private GameController gameController;
     bool a = false;
 
     void Start()
@@ -16,13 +20,14 @@ public class GateCameraMover : MonoBehaviour
         if (followingListeners.Length == 0)
         {
             followingListeners = new GameObject[1];
-            followingListeners[0] = GameObject.FindObjectOfType<Follow>().gameObject;
+            followingListeners[0] = FindObjectOfType<Follow>().gameObject;
         }
-        if (target == null) target = GameObject.FindObjectOfType<BallController>().transform;
-        GameController gc = GameObject.FindObjectOfType<GameController>();
-        gc.OnEnterSwipeArea += StartFollowing;
-        gc.OnWin += StopFollowing;
-        gc.OnGameOver += StopFollowing;
+        if (targetBall == null) targetBall = FindObjectOfType<BallController>().transform;
+        if (targetGK == null) targetGK = FindObjectOfType<GoalkeeperPlayerControl>().transform;
+        gameController = FindObjectOfType<GameController>();
+        StartFollowing();
+        gameController.OnWin += StopFollowing;
+        gameController.OnGameOver += StopFollowing;
     }
 
     private void StartFollowing()
@@ -57,11 +62,18 @@ public class GateCameraMover : MonoBehaviour
 
     private IEnumerator FollowTarget()
     {
-        transform.position = new Vector3(target.position.x,target.position.y,target.position.z-3f);
-        Vector3 startPosition = new Vector3(target.position.x,target.position.y,target.position.z-1f);
         while(true)
         {
-            transform.position = Vector3.Lerp (transform.position, (target.position-startPosition)*0.4f+startPosition, Time.deltaTime * smooth);
+            if(gameController.playerRole == PlayerTypes.kicker)
+            {
+                transform.position = Vector3.Lerp (transform.position, (targetBall.position-startPointBall.position)*0.4f+startPointBall.position, Time.deltaTime * smooth);
+                transform.rotation = startPointBall.rotation;
+            }
+            if(gameController.playerRole == PlayerTypes.goalkeeper)
+            {
+                transform.position = Vector3.Lerp (transform.position, (targetGK.position-startPointGK.position)*0.4f+startPointGK.position, Time.deltaTime * smooth);
+                transform.rotation = startPointGK.rotation;
+            }
             yield return new WaitForEndOfFrame();
         }
     }

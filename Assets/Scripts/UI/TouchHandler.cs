@@ -18,43 +18,44 @@ public class TouchHandler : MonoBehaviour, IPointerDownHandler, IPointerUpHandle
     public FixedJoystick joystick;
 
     private void Start() {
-        StartCountdown downCounter = GameObject.FindObjectOfType<StartCountdown>();
-        joystick = GameObject.FindObjectOfType<FixedJoystick>();
-        joystick.OnJoystickReleased += GenerateSwipelineFromJoystick;
-        GameController gameController = GameObject.FindObjectOfType<GameController>();
+        StartCountdown downCounter = FindObjectOfType<StartCountdown>();
+        joystick = FindObjectOfType<FixedJoystick>();
+        //joystick.OnJoystickReleased += GenerateSwipelineFromJoystick;
+        GameController gameController = FindObjectOfType<GameController>();
         gameController.OnEnterSwipeArea += ChangeControlToSwipe;
         gameController.OnSwipeExit += BlockControl;
         //downCounter.OnDelayEnd +=ChangeControlToDrag;
         ChangeControlToDrag();
     }
 
-    private void GenerateSwipelineFromJoystick(Vector2 releaseCoords)
-{
-    if (controlType == 0)
+    public void GenerateSwipelineFromJoystick(Vector2? releaseCoords = null)
     {
-        // Генерация координат от начальной позиции до конечной
-        Vector2 start = Vector2.zero; // Начальная позиция джойстика (ноль)
-        Vector2 end = releaseCoords;  // Конечная позиция джойстика
-
-        // Генерируем 5 точек по прямой от start до end
-        swipeCoords = new Vector2[5];
-        for (int i = 0; i < 5; i++)
+        Vector2 coords = releaseCoords ?? new Vector2(joystick.Horizontal,joystick.Vertical);
+        if (controlType == 0)
         {
-            // Рассчитываем пропорцию для каждой точки
-            float t = i / 4f; // t будет от 0 до 1
-            swipeCoords[i] = Vector2.Lerp(start, end, t);
+            // Генерация координат от начальной позиции до конечной
+            Vector2 start = Vector2.zero; // Начальная позиция джойстика (ноль)
+            Vector2 end = coords;  // Конечная позиция джойстика
+
+            // Генерируем 5 точек по прямой от start до end
+            swipeCoords = new Vector2[5];
+            for (int i = 0; i < 5; i++)
+            {
+                // Рассчитываем пропорцию для каждой точки
+                float t = i / 4f; // t будет от 0 до 1
+                swipeCoords[i] = Vector2.Lerp(start, end, t);
+            }
+
+            OnSwipeEnd();
         }
 
-        OnSwipeEnd();
-    }
+        if (controlType == 1)
+        {
+            OnDragEnd?.Invoke();
+        }
 
-    if (controlType == 1)
-    {
-        OnDragEnd?.Invoke();
+        OnTouchEnd?.Invoke();
     }
-
-    OnTouchEnd?.Invoke();
-}
 
     public void OnPointerDown(PointerEventData eventData)
     {

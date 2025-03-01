@@ -7,6 +7,7 @@ public class AdditiveUISceneController : MonoBehaviour
 {
     [SerializeField] private SideMoveController sideMoveController;
     [SerializeField] private GateMove gateMove;
+    [SerializeField] private GoalkeeperPlayerControl gkPlayerControl;
     [SerializeField] private LineRenderer drawingLine;
 
     private void Start()
@@ -20,6 +21,7 @@ public class AdditiveUISceneController : MonoBehaviour
         UserUIComponentsProducer UIComponentsProducer = FindObjectOfType<UserUIComponentsProducer>();
         sideMoveController.touchHandler = UIComponentsProducer.touchPanel;
         gateMove.touchHandler = UIComponentsProducer.touchPanel;
+        gkPlayerControl.touchHandler = UIComponentsProducer.touchPanel;
         UIComponentsProducer.lineDrawer.lineRenderer = drawingLine;
     }
 }

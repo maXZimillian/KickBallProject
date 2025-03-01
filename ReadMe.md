@@ -10,20 +10,20 @@ Kick Ball Game is a Unity-based project utilizing free assets. All external asse
 
 ### Main Scripts
 
-- `` - The primary scene object that controls and manages key events, linking various components together.
-- `` - Loads the UI scene and links it to game objects and the main scene.
-- `` - Provides core game objects access to UI elements and events.
-- `` - Manages UI elements, buttons, and panels within the game.
-- `` - Attached to the ball object, handling the core ball behavior.
-- `` - Controls the logic of the ball's movement towards the goal, including shot strength, jump height, and trajectory calculations.
-- `` - Contains scripts for scene triggers and NPC character management.
-- `` - Attached to the goal prefab, managing the goalkeeper's movement, ball interception calculations, trajectory predictions, jump power, and response delay settings.
+- `Scripts/Game/GameController` - The primary scene object that controls and manages key events, linking various components together.
+- `Scripts/Scene/AdditiveUISceneController` - Loads the UI scene and links it to game objects and the main scene.
+- `Scripts/UI/UserUIComponentsProducer` - Provides core game objects access to UI elements and events.
+- `Scripts/UI/IngameUIController` - Manages UI elements, buttons, and panels within the game.
+- `Scripts/Ball/BallController` - Attached to the ball object, handling the core ball behavior.
+- `Scripts/Ball/GateMove` - Controls the logic of the ball's movement towards the goal, including shot strength, jump height, and trajectory calculations.
+- `Scripts/Environment/` - Contains scripts for scene triggers and NPC character management.
+- `Scripts/Environment/Players/GoalkeeperController` - Attached to the goal prefab, managing the goalkeeper's movement, ball interception calculations, trajectory predictions, jump power, and response delay settings.
 
 ### Prefabs
 
-- `` - Goalpost with preset animations, a goalkeeper, and a penalty kicker.
-- `` - A dynamic camera that follows the ball and switches modes.
-- `` - The configured ball object containing all control logic.
+- `EnemyGoalGate` - Goalpost with preset animations, a goalkeeper, and a penalty kicker.
+- `CameraPack` - A dynamic camera that follows the ball and switches modes.
+- `SoccerBall` - The configured ball object containing all control logic.
 
 ## Scenes
 

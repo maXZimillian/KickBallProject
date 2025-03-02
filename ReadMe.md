@@ -5,6 +5,7 @@ Kick Ball Game is a Unity-based project utilizing free assets. All external asse
 ```
 ./Assets/Resources/AdditivePackages
 ```
+At the moment the project contains developed multiplayer part with player synchronization and switching of goalkeeper - forward modes between players, as well as logic of computer goalkeeper behavior. For the realization of multiplayer were used Websockets and node.js server.
 
 ## Core Components
 
@@ -18,6 +19,9 @@ Kick Ball Game is a Unity-based project utilizing free assets. All external asse
 - `Scripts/Ball/GateMove` - Controls the logic of the ball's movement towards the goal, including shot strength, jump height, and trajectory calculations.
 - `Scripts/Environment/` - Contains scripts for scene triggers and NPC character management.
 - `Scripts/Environment/Players/GoalkeeperController` - Attached to the goal prefab, managing the goalkeeper's movement, ball interception calculations, trajectory predictions, jump power, and response delay settings.
+- `Scripts/Web/WebGKUpdate` - Attached to the goalkeeper. Synchronizes the goalkeeper's actions between clients.
+- `Scripts/Ball/WebBallUpdate` - Attached to ball. Synchronizes the ball movement between clients.
+- `Scripts/Web/Messages/` - There are all templates fo websocket messages, that sending to server and getting from it.
 
 ### Prefabs
 
@@ -32,13 +36,6 @@ The project consists of three scenes:
 1. **Main Menu**
 2. **Game Field**
 3. **Dynamically Loaded UI Scene**
-
-## Additional Features (Under Development)
-
-- Collectible items
-- Skin shop and customization
-- Partial particle effects management (including confetti asset)
-- Swipe controls
 
 ## WebGL Build Settings
 
@@ -140,11 +137,13 @@ Replace `PROJECT_FOLDER_NAME` with the actual build folder name.
 ### Backend
 
 - Located in: `/Builds` along with the latest build.
-- Final deployment path: `/var/www/backend/`
+- Final deployment path: `/var/www/SoccerGame/backend/`.
+- app.py отвечает за запуск игры и открытие её в telegram mini app.
+- websockets.js is responsible for creating lobbies for players, assigning initial roles to them, and exchanging messages between Unity-clients.
 
 ### Unity Frontend
 
-- Final deployment path: `/var/www/userproject/`
+- Final deployment path: `/var/www/SoccerGame/`
 - If paths need to be changed, update `app.py` accordingly.
 
 ## Server Requirements
@@ -153,6 +152,7 @@ To run the project on a Linux server, ensure the following are installed:
 
 - **Python**
 - **Aiogram 2.x** (Aiogram 3.x is not supported)
+- **Nodejs**
 
 ---
 
